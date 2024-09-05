@@ -18,7 +18,14 @@ function reducer(state: { month: number, range: Date[] }, action: ACTIONTYPE) {
       if (state.month === 12) return { ...state, month: 12 };
       return { ...state, month: state.month + 1 };
     case 'range':
-      if (state.range.length >= 2) return { ...state, range: [action.payload] };
+      if (state.range.length === 1 && action.payload.getTime() < state.range[0].getTime()) {
+        return { ...state, range: [action.payload] };
+      }
+
+      if (state.range.length >= 2) {
+        return { ...state, range: [action.payload] }
+      };
+
       return { ...state, range: state.range.concat(action.payload) };
     default:
       throw new Error();
@@ -36,12 +43,12 @@ const CalendarHeader: React.FC<{ currentMonth: number, dispatch: React.Dispatch<
 })
 
 // 日期元件
-const DayItem: React.FC<{ day: IDay, dispatch: React.Dispatch<ACTIONTYPE>, isBetween: boolean }> = React.memo(({ day, dispatch, isBetween }) => {
+const DayItem: React.FC<{ day: IDay, dispatch: React.Dispatch<ACTIONTYPE>, isBetween: boolean, isSelected: boolean }> = React.memo(({ day, dispatch, isBetween, isSelected }) => {
 
   const ref = React.createRef<HTMLDivElement>();
 
   useEffect(() => {
-    if (isBetween) ref.current?.classList.add('selected');
+    if (isBetween || isSelected) ref.current?.classList.add('selected');
     else ref.current?.classList.remove('selected');
 
     if (day.isToday) ref.current?.classList.add('today');
@@ -49,7 +56,9 @@ const DayItem: React.FC<{ day: IDay, dispatch: React.Dispatch<ACTIONTYPE>, isBet
 
     if (day.isOutOfMonth) ref.current?.classList.add('canNotSelect');
     else ref.current?.classList.remove('canNotSelect');
-  }, [day.isOutOfMonth, day.isToday, ref, isBetween]);
+
+
+  }, [day.isOutOfMonth, day.isToday, ref, isBetween, isSelected]);
 
   const handleClick = () => {
     ref.current?.classList.toggle('selected');
@@ -71,12 +80,16 @@ const App: React.FC = () => {
 
   const isBetween = (day: IDay) => {
     if (state.range.length === 2) {
-
       return new Date(state.range[0]).getTime() <= new Date(day.date).getTime() && new Date(day.date).getTime() <= new Date(state.range[1]).getTime();
     }
     return false;
   }
 
+  const isSelected = (day: IDay) => {
+    if (state.range.length === 1)
+      return state.range.some(range => new Date(range).getTime() === new Date(day.date).getTime());
+    return false;
+  }
 
   return (
     <section className='calendarContainer'>
@@ -85,7 +98,7 @@ const App: React.FC = () => {
         <CalendarHeader currentMonth={state.month} dispatch={dispatch} />
         <div className='calendarBody'>
           {[...preMonthDates, ...currentMonthDates, ...nextMonthDates].map((day, index) => (
-            <DayItem key={index} day={day} dispatch={dispatch} isBetween={isBetween(day)} />
+            <DayItem key={index} day={day} dispatch={dispatch} isBetween={isBetween(day)} isSelected={isSelected(day)} />
           ))}
         </div>
       </div>
