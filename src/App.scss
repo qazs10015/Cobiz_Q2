@@ -1,0 +1,56 @@
+@mixin headerArrowBtn($deg) {
+  cursor: pointer;
+  transform: rotate($deg);
+  background-color: white;
+  &:hover {
+    background-color: #e6e6e6;
+  }
+}
+
+body {
+  background-color: white;
+  color: black;
+}
+.calendarContainer {
+  width: 350px;
+  height: 240px;
+  font-size: 16px;
+  .calendarHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+
+    .prev {
+      @include headerArrowBtn(90deg);
+    }
+    .next {
+      @include headerArrowBtn(-90deg);
+    }
+  }
+  .calendarBody {
+    line-height: 2rem;
+    text-align: center;
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    .day {
+      width: 50px;
+      height: 36px;
+      cursor: pointer;
+      &:hover {
+        background-color: #e6e6e6;
+      }
+      &.today {
+        background-color: #ffff76;
+      }
+
+      &.selected {
+        background-color: #006edc;
+      }
+    }
+    .canNotSelect {
+      color: #e6e6e6;
+      cursor: not-allowed;
+    }
+  }
+}
